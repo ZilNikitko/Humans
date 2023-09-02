@@ -1,0 +1,34 @@
+{
+  "root": true,
+  "extends": ["@react-native-community", "prettier"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["import"],
+  "rules": {
+    "no-console": "warn",
+    "import/no-absolute-path": 2,
+    "import/no-useless-path-segments": 2,
+    "import/newline-after-import": 2,
+    "react-hooks/exhaustive-deps": "off",
+    "react/jsx-key": "error",
+    "react/jsx-curly-brace-presence": ["error", { "props":  "never", "children":  "never"}],
+    "arrow-body-style": ["error", "as-needed"]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.testjs",
+        "**/*.test.ts",
+        "**/*.test.jsx",
+        "**/*.spec.js",
+        "**/*.spec.ts",
+        "**/*.spec.jsx",
+        "**/*.e2e.js",
+        "**/*.e2e.ts",
+        "**/*.e2e.tsx"
+      ],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
+}
