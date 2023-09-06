@@ -4,8 +4,8 @@ import {MainStackProps} from '../types';
 
 import routesTitle from '../routesTitle';
 import RoutesNames from '../routesNames';
-import MainScreen from '../../screens/MainScreen';
-import {createStackNavigator} from '@react-navigation/stack';
+import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
+import {MainTabs} from './MainTabs';
 
 const MainStackNavigator = createStackNavigator<MainStackProps>();
 
@@ -15,8 +15,13 @@ const MainStack = () => (
       ...routesTitle(route),
     })}>
     <MainStackNavigator.Screen
-      component={MainScreen}
-      name={RoutesNames.MAIN_SCREEN}
+      component={MainTabs}
+      name={RoutesNames.TAB_NAVIGATOR}
+      options={{
+        headerShown: false,
+        gestureEnabled: true,
+        ...TransitionPresets.SlideFromRightIOS,
+      }}
     />
   </MainStackNavigator.Navigator>
 );
