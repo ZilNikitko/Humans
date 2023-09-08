@@ -4,6 +4,7 @@ export type MainStackProps = {
   [RoutesNames.TAB_NAVIGATOR]?: TabBarProps & {
     screen: RoutesNames | keyof typeof RoutesNames;
   };
+  [RoutesNames.QA_SCREEN]?: {};
 };
 
 export type TabBarProps = {

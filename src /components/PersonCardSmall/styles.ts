@@ -1,4 +1,5 @@
 import {StyleSheet} from 'react-native';
+
 import {StyleGuide} from '../mainStyles';
 
 export default StyleSheet.create({

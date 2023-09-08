@@ -1,5 +1,10 @@
 export const AVATAR = require('./avatar.png');
+export const AVATAR_ROW_1 = require('./avatar_row_1.png');
+export const AVATAR_ROW_2 = require('./avatar_row_2.png');
+export const AVATAR_ROW_3 = require('./avatar_row_3.png');
 export const PERSON = require('./person.jpg');
 export const RATING_UP = require('./rating_up.png');
+export const QA_AVATAR = require('./qa_avatar.png');
 export const LIST_AVATAR = require('./list_avatar.png');
 export const VERIFICATION = require('./verification.png');
+export const QA_AVATAR_SMALL = require('./qa_avatar_small.png');

@@ -8,18 +8,21 @@ import React, {
   useState,
 } from 'react';
 import {
-  Text,
-  View,
-  Image,
   FlatList,
-  StatusBar,
-  TouchableOpacity,
+  Image,
   ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
   ViewStyle,
 } from 'react-native';
 import Animated, {
   AnimatedStyleProp,
+  Extrapolation,
+  interpolate,
   runOnJS,
+  useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -32,23 +35,23 @@ import CategoryButton from '../../components/CategoryButton';
 import PersonCardSmall from '../../components/PersonCardSmall';
 import {ARROW_RIGHT, AVATAR, CALENDAR, STAR} from '../../../static';
 import type {
-  HumansType,
-  HumansShortType,
   CategoryButtonType,
+  HumansShortType,
+  HumansType,
 } from '../../lib/apiTypes';
 import {
-  CATEGORY_MOCK_DATA,
-  RECENTLY_MOCK_DATA,
-  NEW_HUMANS_MOCK_DATA,
   ALL_EXPERT_MOCK_DATA,
   BEST_MATCHES_MOCK_DATA,
+  CATEGORY_MOCK_DATA,
+  NEW_HUMANS_MOCK_DATA,
+  RECENTLY_MOCK_DATA,
 } from '../../lib/Api';
 
 import styles from './styles';
 
-const TEXT_DURATION: number = 1000;
 const DELAY: number = 500;
 const DURATION: number = 300;
+const TEXT_DURATION: number = 1000;
 const HEADER_TEXT_INITIAL_HEIGHT: number = 82;
 const HEADER_TEXT_INITIAL_MARGIN: number = 40;
 
@@ -58,15 +61,48 @@ const HEADER_TITLE_TEXT = [
   'Find Humans and book your first consultation',
 ];
 
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
+const range = [0, 100];
+
 const Presenter = ({}) => {
   const firstTextOpacity = useSharedValue<number>(0);
   const secondTextOpacity = useSharedValue<number>(0);
   const thirdTextOpacity = useSharedValue<number>(0);
-  const [currentCategory, setCurrentCategory] = useState<number>(0);
   const headerTextOpacity = useSharedValue<number>(1);
+  const [currentCategory, setCurrentCategory] = useState<number>(0);
   const headerTextHeight = useSharedValue<number>(HEADER_TEXT_INITIAL_HEIGHT);
   const headerTextMargin = useSharedValue<number>(HEADER_TEXT_INITIAL_MARGIN);
   const firstRenderScreen: MutableRefObject<boolean> = useRef<boolean>(true);
+
+  const translationY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler(event => {
+    translationY.value = event.contentOffset.y;
+  });
+
+  const headerTextScrollAnimatedStyle: AnimatedStyleProp<ViewStyle> =
+    useAnimatedStyle(
+      (): ViewStyle => ({
+        height: interpolate(
+          translationY.value,
+          range,
+          [HEADER_TEXT_INITIAL_HEIGHT, 0],
+          Extrapolation.CLAMP,
+        ),
+        opacity: interpolate(
+          translationY.value,
+          [0, 100],
+          [1, 0],
+          Extrapolation.CLAMP,
+        ),
+        marginBottom: interpolate(
+          translationY.value,
+          [0, 100],
+          [HEADER_TEXT_INITIAL_MARGIN, 0],
+          Extrapolation.CLAMP,
+        ),
+      }),
+    );
 
   const isInitialCategory: boolean = useMemo(
     () => currentCategory === 0,
@@ -220,6 +256,11 @@ const Presenter = ({}) => {
     [],
   );
 
+  const listFooterComponent = useCallback(
+    () => <View style={styles.footerComponent} />,
+    [],
+  );
+
   return (
     <SafeAreaViewOS style={styles.safeAreaView}>
       <StatusBar barStyle="dark-content" />
@@ -240,7 +281,12 @@ const Presenter = ({}) => {
             />
           </View>
         </View>
-        <Animated.View style={[headerTextAnimatedStyle]}>
+        <Animated.View
+          style={[
+            currentCategory === 0
+              ? headerTextScrollAnimatedStyle
+              : headerTextAnimatedStyle,
+          ]}>
           <Animated.Text
             style={[
               styles.title,
@@ -266,7 +312,9 @@ const Presenter = ({}) => {
           showsHorizontalScrollIndicator={false}
         />
       </View>
-      <ScrollView
+      <AnimatedScrollView
+        scrollEventThrottle={16}
+        onScroll={scrollHandler}
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}>
         <View style={styles.newHumansWrapper}>
@@ -336,12 +384,13 @@ const Presenter = ({}) => {
               data={ALL_EXPERT_MOCK_DATA}
               renderItem={renderAllExperts}
               numColumns={2}
+              ListFooterComponent={listFooterComponent}
               columnWrapperStyle={styles.flatListColumn}
               showsVerticalScrollIndicator={false}
             />
           </View>
         </View>
-      </ScrollView>
+      </AnimatedScrollView>
     </SafeAreaViewOS>
   );
 };

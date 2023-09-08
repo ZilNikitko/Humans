@@ -6,7 +6,7 @@ export default StyleSheet.create({
     width: 166,
     height: 280,
     borderRadius: 12,
-    backgroundColor: StyleGuide.mainColors.primary_08,
+    backgroundColor: StyleGuide.mainColors.background,
     justifyContent: 'flex-end',
   },
   mainWrapperLarge: {

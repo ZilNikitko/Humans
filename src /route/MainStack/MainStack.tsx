@@ -6,6 +6,7 @@ import routesTitle from '../routesTitle';
 import RoutesNames from '../routesNames';
 import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
 import {MainTabs} from './MainTabs';
+import QAScreen from '../../screens/QAScreen';
 
 const MainStackNavigator = createStackNavigator<MainStackProps>();
 
@@ -21,6 +22,15 @@ const MainStack = () => (
         headerShown: false,
         gestureEnabled: true,
         ...TransitionPresets.SlideFromRightIOS,
+      }}
+    />
+    <MainStackNavigator.Screen
+      component={QAScreen}
+      name={RoutesNames.QA_SCREEN}
+      options={{
+        headerShown: false,
+        gestureEnabled: true,
+        ...TransitionPresets.ModalSlideFromBottomIOS,
       }}
     />
   </MainStackNavigator.Navigator>

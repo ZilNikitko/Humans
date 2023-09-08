@@ -115,4 +115,8 @@ export default StyleSheet.create({
   flatListColumn: {
     marginHorizontal: 12,
   },
+  footerComponent: {
+    height: 97,
+    backgroundColor: StyleGuide.mainColors.transparent,
+  },
 });

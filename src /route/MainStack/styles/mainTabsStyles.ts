@@ -6,16 +6,19 @@ export default StyleSheet.create({
   tabBar: {
     position: 'absolute',
     height: 97,
-    backgroundColor: StyleGuide.mainColors.tabBar,
+    borderTopWidth: 0,
+    backgroundColor: StyleGuide.mainColors.transparent,
   },
   tabBarAvatar: {
     width: 28,
     height: 28,
+    marginTop: 10,
   },
   tabBarIcon: {
     width: 24,
     height: 24,
     tintColor: StyleGuide.mainColors.base_02,
+    marginTop: 10,
   },
   tabBarIconActive: {
     width: 28,

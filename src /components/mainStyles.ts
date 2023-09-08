@@ -38,6 +38,7 @@ export enum TypographyTypes {
 export const SF_PRO_DISPLAY: string = 'SF Pro Display';
 
 export const mainColors = {
+  circleTab: 'rgba(255, 255, 255, 0.24)',
   tabBar: 'rgba(68, 76, 177, 0.06)',
   background: '#F4F3F8',
   base_black: '#000000',

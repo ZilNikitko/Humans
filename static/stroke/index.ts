@@ -1,6 +1,12 @@
+export const DOTS = require('./dots.png');
+export const PLAY = require('./play.png');
 export const STAR = require('./star.png');
 export const HOME = require('./home.png');
+export const PAUSE = require('./pause.png');
 export const SETTINGS = require('./settings.png');
 export const CALENDAR = require('./calendar.png');
 export const ARROW_RIGHT = require('./arrow_right.png');
+export const HEART_FILLED = require('./heart_filled.png');
+export const CHEVRON_DOWN = require('./chevron_down.png');
 export const NOTIFICATIONS = require('./notifications.png');
+export const HEART_UNFILLED = require('./heart_unfilled.png');
