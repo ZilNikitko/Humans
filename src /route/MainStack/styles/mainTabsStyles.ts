@@ -12,24 +12,23 @@ export default StyleSheet.create({
   tabBarAvatar: {
     width: 28,
     height: 28,
-    marginTop: 10,
+    marginTop: 42.5,
   },
   tabBarIcon: {
     width: 24,
     height: 24,
     tintColor: StyleGuide.mainColors.base_02,
-    marginTop: 10,
+    marginTop: 42.5,
   },
   tabBarIconActive: {
     width: 28,
     height: 28,
     tintColor: StyleGuide.mainColors.base_04,
   },
-  blurView: {
+  canvas: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: 97,
   },
 });

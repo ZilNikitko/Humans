@@ -26,10 +26,12 @@ import CountdownTimer from '../CountdownTimer';
 
 import styles from './styles';
 
+const DURATION: number = 300;
+
 const CurrentWorkout = memo(
   ({
     soundLength = 0,
-    onEndTraining = () => {},
+    onEndTrack = () => {},
     style,
     buttonStyle,
     imageButtonStyle,
@@ -38,7 +40,7 @@ const CurrentWorkout = memo(
     const buttonOpacity = useSharedValue<number>(0);
     const valueWidthWrapper = useSharedValue<number>(0);
     const [isStart, setIsStart] = useState<boolean>(false);
-    const [trainDone, setTrainDone] = useState<boolean>(false);
+    const [isOver, setIsOver] = useState<boolean>(false);
 
     const paused = useSharedValue<boolean>(!isStart);
 
@@ -56,10 +58,10 @@ const CurrentWorkout = memo(
     );
 
     useEffect(() => {
-      if (trainDone) {
-        buttonOpacity.value = withTiming(1, {duration: 300});
+      if (isOver) {
+        buttonOpacity.value = withTiming(1, {duration: DURATION});
       }
-    }, [trainDone]);
+    }, [isOver]);
 
     const startTrain = useCallback((): void => {
       setIsStart(prev => !prev);
@@ -70,7 +72,7 @@ const CurrentWorkout = memo(
             SCREEN_WIDTH - 120,
             {duration: soundLength * 1000, easing: Easing.linear},
             (): void => {
-              runOnJS(setTrainDone)(true);
+              runOnJS(setIsOver)(true);
               runOnJS(setIsStart)(false);
             },
           ),
@@ -80,10 +82,10 @@ const CurrentWorkout = memo(
     }, [isStart]);
 
     useEffect((): void => {
-      if (trainDone) {
-        onEndTraining();
+      if (isOver) {
+        onEndTrack();
       }
-    }, [trainDone]);
+    }, [isOver]);
 
     return (
       <React.Fragment>
@@ -108,7 +110,7 @@ const CurrentWorkout = memo(
             />
           </View>
         </View>
-        {trainDone && (
+        {isOver && (
           <TouchableOpacity activeOpacity={0.8}>
             <Animated.View style={[styles.replyButton, buttonAnimatedStyle]}>
               <Text style={styles.replyText}>Reply now</Text>
@@ -124,7 +126,7 @@ export default CurrentWorkout;
 
 interface Props {
   soundLength?: number;
-  onEndTraining?: () => void;
+  onEndTrack?: () => void;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   loadViewStyle?: StyleProp<ViewStyle>;

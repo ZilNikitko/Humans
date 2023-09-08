@@ -1,7 +1,6 @@
 import React, {ReactElement, ReactNode, useCallback} from 'react';
 import {Image, ImageSourcePropType} from 'react-native';
 
-import {BlurView} from '@react-native-community/blur';
 import {useNavigation} from '@react-navigation/native';
 import type {MainStackProps, TabBarProps} from '../types';
 import {StackNavigationProp, TransitionPresets} from '@react-navigation/stack';
@@ -12,8 +11,10 @@ import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
+import {Svg, Defs, Rect, Mask, Ellipse} from 'react-native-svg';
 
 import RouteNames from '../routesNames';
+import {SCREEN_WIDTH} from '../../lib/utils';
 import styles from './styles/mainTabsStyles';
 import QAScreen from '../../screens/QAScreen';
 import MainScreen from '../../screens/MainScreen';
@@ -24,6 +25,8 @@ import SafeAreaViewOS from '../../components/SafeAreaViewOS';
 import {AVATAR, HOME, NOTIFICATIONS, SETTINGS} from '../../../static';
 
 const TabNavigator = createBottomTabNavigator<TabBarProps>();
+
+const TABS_HEIGHT: number = 96;
 
 export function MainTabs() {
   const navigation = useNavigation<StackNavigationProp<MainStackProps>>();
@@ -69,15 +72,41 @@ export function MainTabs() {
     [],
   );
 
+  const CustomTabBar = () => (
+    <Svg
+      width={SCREEN_WIDTH}
+      height={TABS_HEIGHT}
+      style={[styles.canvas, {height: TABS_HEIGHT}]}>
+      <Defs>
+        <Mask
+          id="tab_bar"
+          x="0"
+          y="0"
+          width={SCREEN_WIDTH}
+          height={TABS_HEIGHT}>
+          <Rect width={SCREEN_WIDTH} height={TABS_HEIGHT} fill="#ffffff" />
+          <Ellipse
+            cx={SCREEN_WIDTH / 2}
+            cy="0"
+            rx={SCREEN_WIDTH / 2}
+            ry="34"
+            fill="black"
+          />
+        </Mask>
+      </Defs>
+      <Rect
+        height={TABS_HEIGHT}
+        width={SCREEN_WIDTH}
+        fill={StyleGuide.mainColors.tabBar}
+        mask="url(#tab_bar)"
+      />
+    </Svg>
+  );
+
   const CustomBottomTabBar = useCallback(
     (props: BottomTabBarProps): ReactElement => (
       <React.Fragment>
-        <BlurView
-          blurType="light"
-          blurAmount={30}
-          reducedTransparencyFallbackColor={StyleGuide.mainColors.base_white}
-          style={styles.blurView}
-        />
+        <CustomTabBar />
         <BottomTabBar {...props} />
       </React.Fragment>
     ),
