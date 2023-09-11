@@ -1,6 +1,8 @@
 import {Dimensions, Platform} from 'react-native';
 import {DependencyList, MutableRefObject, useEffect, useRef} from 'react';
 
+import {useEvent, useHandler} from 'react-native-reanimated';
+
 export const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} =
   Dimensions.get('screen');
 
@@ -67,4 +69,33 @@ export function timeIntervalFormattedMethod(
   return `${minutes < 10 ? '0' + minutes : minutes}:${
     seconds < 10 ? '0' + String(seconds) : seconds
   }`;
+}
+
+export type PagerScrollHandlersType<T> = {
+  onPageScroll: (e: T) => void;
+};
+
+export function usePagerScrollHandler<T extends object & {eventName: string}>(
+  handlers: PagerScrollHandlersType<T>,
+  subscribeForEvent: string,
+  dependencies?: ReadonlyArray<any>,
+) {
+  const subscribeForEvents: Array<string> = ['onPageScroll'];
+  const {doDependenciesDiffer}: {doDependenciesDiffer: boolean} = useHandler(
+    handlers,
+    // @ts-ignore
+    dependencies,
+  );
+
+  return useEvent<T>(
+    (event: T): void => {
+      'worklet';
+      const {onPageScroll}: PagerScrollHandlersType<T> = handlers;
+      if (onPageScroll && event?.eventName?.endsWith(subscribeForEvent)) {
+        onPageScroll(event);
+      }
+    },
+    subscribeForEvents,
+    doDependenciesDiffer,
+  );
 }

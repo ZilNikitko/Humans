@@ -1,135 +1,150 @@
-import React, {useCallback, useState} from 'react';
+import React, {
+  ComponentClass,
+  LegacyRef,
+  ReactElement,
+  useCallback,
+  useRef,
+  useState,
+} from 'react';
+
+import Animated, {AnimateProps, useSharedValue} from 'react-native-reanimated';
+import PagerView, {
+  PagerViewOnPageSelectedEvent,
+  PagerViewProps,
+} from 'react-native-pager-view';
+
+import QAPage from '../../components/QAPage';
+import {usePagerScrollHandler} from '../../lib/utils';
+
+import styles from './styles';
+import {QA_DATA} from '../../lib/Api';
+import {DataQAType} from '../../lib/apiTypes';
 import {
-  Text,
   View,
   Image,
-  StatusBar,
   SafeAreaView,
   ImageBackground,
   TouchableOpacity,
   InteractionManager,
+  ImageSourcePropType,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import Animated, {
-  withTiming,
-  useSharedValue,
-  useAnimatedStyle,
-} from 'react-native-reanimated';
-
-import {
-  DOTS,
-  QA_AVATAR,
-  RATING_UP,
-  VERIFICATION,
-  AVATAR_ROW_1,
-  AVATAR_ROW_2,
-  AVATAR_ROW_3,
-  CHEVRON_DOWN,
-  QA_AVATAR_SMALL,
-} from '../../../static';
-import HeartButton from '../../components/HeartButton';
 import {BlurView} from '@react-native-community/blur';
-import {StyleGuide} from '../../components/mainStyles';
-import AvatarCards from '../../components/AvatarCards';
-import Play from '../../components/Play';
+import {CHEVRON_DOWN, DOTS, QA_AVATAR} from '../../../static';
+import {OnPageScrollEventData} from 'react-native-pager-view/lib/typescript/PagerViewNativeComponent';
+
+const INITIAL_PAGE: number = 0;
+
+const AnimatedPager: ComponentClass<AnimateProps<PagerViewProps>> =
+  Animated.createAnimatedComponent(PagerView);
 
 const ImageBackgroundAnimatedComponent =
   Animated.createAnimatedComponent(ImageBackground);
+type onPageScrollEventType = OnPageScrollEventData & {eventName: string};
 
-import styles from './styles';
+const Presenter = ({onPressGoBack, imageArray}: Props) => {
+  const offsetValue = useSharedValue<number>(0);
+  const positionValue = useSharedValue<number>(INITIAL_PAGE);
+  const refPagerView: LegacyRef<PagerView> = useRef(null);
+  const [currentPagerIndex, setCurrentPagerIndex] =
+    useState<number>(INITIAL_PAGE);
 
-const DURATION: number = 300;
+  const [lol, setLol] = useState(false);
 
-const Presenter = ({}) => {
-  const navigation = useNavigation();
-  const imageBackgroundOpacity = useSharedValue<number>(0);
-  const [pressedHeart, setPressedHeart] = useState<boolean>(false);
+  const onPageScroll = usePagerScrollHandler<onPageScrollEventType>(
+    {
+      onPageScroll: (e: onPageScrollEventType): void => {
+        'worklet';
+        offsetValue.value = e.offset;
+        positionValue.value = e.position;
+      },
+    },
+    'onPageScroll',
+    [currentPagerIndex],
+  );
 
-  const imageBackgroundAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: imageBackgroundOpacity.value,
-  }));
+  const onPageSelected = useCallback(
+    (e: PagerViewOnPageSelectedEvent): void => {
+      setLol(true);
+      const currentIndex: number = e.nativeEvent?.position;
+      if (currentIndex || currentIndex === 0) {
+        setCurrentPagerIndex(currentIndex);
+      }
+    },
+    [currentPagerIndex, lol],
+  );
 
-  const onPressHeart = useCallback(() => {
-    setPressedHeart(prev => !prev);
-  }, []);
+  const goToNextPage = useCallback((): void => {
+    if (refPagerView.current && currentPagerIndex !== QA_DATA.length - 1) {
+      InteractionManager.runAfterInteractions((): void => {
+        refPagerView.current?.setPage(currentPagerIndex + 1);
+      });
+    }
+  }, [currentPagerIndex]);
 
-  const onLoadImage = useCallback((): void => {
-    InteractionManager.runAfterInteractions((): void => {
-      imageBackgroundOpacity.value = withTiming(1, {duration: DURATION});
-    });
-  }, []);
-
-  const onPressGoBack = useCallback((): void => {
-    navigation.goBack();
-  }, []);
+  const goToPreviousPage = useCallback((): void => {
+    if (refPagerView.current && currentPagerIndex !== 0) {
+      InteractionManager.runAfterInteractions((): void => {
+        refPagerView.current?.setPage(currentPagerIndex - 1);
+      });
+    }
+  }, [currentPagerIndex]);
 
   return (
-    <View style={styles.mainWrapper}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={styles.safeAreaView}>
+      <View style={styles.headerWrapper}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.headerButtonWrapper}
+          onPress={onPressGoBack}>
+          <Image source={CHEVRON_DOWN} style={styles.buttonImage} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.headerButtonWrapper}>
+          <Image source={DOTS} style={styles.buttonImage} />
+        </TouchableOpacity>
+      </View>
       <ImageBackgroundAnimatedComponent
-        source={QA_AVATAR}
-        onLoad={onLoadImage}
-        style={[styles.backGroundImage, imageBackgroundAnimatedStyle]}
+        source={imageArray ? imageArray[currentPagerIndex] : QA_AVATAR}
+        style={styles.backGroundImage}
       />
-      <BlurView
-        blurType="dark"
-        blurAmount={60}
-        reducedTransparencyFallbackColor={StyleGuide.mainColors.base_white}
-        style={styles.blurView}
-      />
-      <SafeAreaView style={styles.safeAreaView}>
-        <View style={styles.contentWrapper}>
-          <View style={styles.headerWrapper}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.headerButtonWrapper}
-              onPress={onPressGoBack}>
-              <Image source={CHEVRON_DOWN} style={styles.buttonImage} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.headerButtonWrapper}>
-              <Image source={DOTS} style={styles.buttonImage} />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.imageWrapper}>
-            <Image source={QA_AVATAR_SMALL} style={styles.qaImage} />
-          </View>
-          <View style={styles.subContentWrapper}>
-            <View style={styles.authorTextWrapper}>
-              <View style={styles.ratingRow}>
-                <Text style={styles.rating}>8.4</Text>
-                <Image source={RATING_UP} style={styles.ratingImage} />
-              </View>
-              <View style={styles.textRow}>
-                <Text style={styles.name}>Kate Ivanovskaya</Text>
-                <Image source={VERIFICATION} style={styles.verificationImage} />
-              </View>
-              <Text style={styles.work}>Coach, lifestyle specialist</Text>
-            </View>
-            <View style={styles.questionTextWrapper}>
-              <Text style={styles.questionText}>
-                Where to get more creative energy these days?
-              </Text>
-            </View>
-            <HeartButton
-              style={styles.heartButton}
-              onPressButton={onPressHeart}
-              isActive={pressedHeart}
-              likesCount={359}
+      <BlurView blurType="dark" blurAmount={50} style={styles.blurView} />
+      <AnimatedPager
+        ref={refPagerView}
+        initialPage={INITIAL_PAGE}
+        onPageSelected={onPageSelected}
+        // @ts-ignore
+        onPageScroll={onPageScroll}
+        style={styles.pagerView}>
+        {(QA_DATA ?? [])?.map(
+          (item: DataQAType, index: number): ReactElement => (
+            <QAPage
+              handleOnPressPreviousPage={goToPreviousPage}
+              handleOnPressNextPage={goToNextPage}
+              index={index}
+              name={item?.name}
+              work={item?.work}
+              offset={offsetValue}
+              rating={item?.rating}
+              key={`qa_page_${index}`}
+              position={positionValue}
+              question={item?.question}
+              userCount={item?.userCount}
+              roundImage={item?.roundImage}
+              likesCount={item?.likesCount}
+              audioDuration={item?.audioDuration}
+              currentPagerIndex={currentPagerIndex}
             />
-            <AvatarCards
-              firstAvatar={AVATAR_ROW_1}
-              secondAvatar={AVATAR_ROW_2}
-              thirdAvatar={AVATAR_ROW_3}
-              usersCount={19}
-            />
-          </View>
-          <Play style={styles.play} soundLength={5} />
-        </View>
-      </SafeAreaView>
-    </View>
+          ),
+        )}
+      </AnimatedPager>
+    </SafeAreaView>
   );
 };
 
 export default Presenter;
+
+interface Props {
+  imageArray?: Array<ImageSourcePropType>;
+  onPressGoBack?: () => void;
+}

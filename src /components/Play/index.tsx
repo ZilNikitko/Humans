@@ -1,13 +1,13 @@
 import React, {memo, useCallback, useState, useEffect} from 'react';
 import {
+  View,
   Text,
   Image,
-  TouchableOpacity,
-  View,
   StyleProp,
   TextStyle,
   ViewStyle,
   ImageStyle,
+  TouchableOpacity,
 } from 'react-native';
 
 import Animated, {
@@ -27,20 +27,20 @@ import CountdownTimer from '../CountdownTimer';
 import styles from './styles';
 
 const DURATION: number = 300;
+const INITIAL_PLAY_WIDTH: number = 0;
 
-const CurrentWorkout = memo(
+const Play = memo(
   ({
     soundLength = 0,
-    onEndTrack = () => {},
     style,
     buttonStyle,
     imageButtonStyle,
     loadViewStyle,
   }: Props) => {
     const buttonOpacity = useSharedValue<number>(0);
-    const valueWidthWrapper = useSharedValue<number>(0);
     const [isStart, setIsStart] = useState<boolean>(false);
     const [isOver, setIsOver] = useState<boolean>(false);
+    const valueWidthWrapper = useSharedValue<number>(INITIAL_PLAY_WIDTH);
 
     const paused = useSharedValue<boolean>(!isStart);
 
@@ -63,10 +63,10 @@ const CurrentWorkout = memo(
       }
     }, [isOver]);
 
-    const startTrain = useCallback((): void => {
+    const startPlay = useCallback((): void => {
       setIsStart(prev => !prev);
       paused.value = !paused.value;
-      if (valueWidthWrapper.value === 0) {
+      if (valueWidthWrapper.value === INITIAL_PLAY_WIDTH && !isStart) {
         valueWidthWrapper.value = withPause(
           withTiming(
             SCREEN_WIDTH - 120,
@@ -79,20 +79,14 @@ const CurrentWorkout = memo(
           paused,
         );
       }
-    }, [isStart]);
-
-    useEffect((): void => {
-      if (isOver) {
-        onEndTrack();
-      }
-    }, [isOver]);
+    }, [isStart, isOver, valueWidthWrapper]);
 
     return (
       <React.Fragment>
         <View style={[styles.playWrapper, style]}>
           <TouchableOpacity
             style={[styles.button, buttonStyle]}
-            onPress={startTrain}>
+            onPress={startPlay}>
             <Image
               style={[styles.buttonImage, imageButtonStyle]}
               source={isStart ? PAUSE : PLAY}
@@ -111,7 +105,7 @@ const CurrentWorkout = memo(
           </View>
         </View>
         {isOver && (
-          <TouchableOpacity activeOpacity={0.8}>
+          <TouchableOpacity activeOpacity={0.8} onPress={startPlay}>
             <Animated.View style={[styles.replyButton, buttonAnimatedStyle]}>
               <Text style={styles.replyText}>Reply now</Text>
             </Animated.View>
@@ -122,11 +116,10 @@ const CurrentWorkout = memo(
   },
 );
 
-export default CurrentWorkout;
+export default Play;
 
 interface Props {
   soundLength?: number;
-  onEndTrack?: () => void;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   loadViewStyle?: StyleProp<ViewStyle>;

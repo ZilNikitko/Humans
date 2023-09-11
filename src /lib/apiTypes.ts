@@ -18,3 +18,14 @@ export interface HumansShortType {
   name: string;
   work: string;
 }
+export type DataQAType = {
+  name: string;
+  work: string;
+  rating: string;
+  question: string;
+  userCount: number;
+  likesCount: number;
+  roundImage: ImageSourcePropType;
+  audioDuration: number;
+  backGroundImage: ImageSourcePropType;
+};

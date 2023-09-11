@@ -3,19 +3,18 @@ import React, {
   ReactElement,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
 import {
-  FlatList,
-  Image,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
   View,
+  Text,
+  Image,
+  FlatList,
+  StatusBar,
   ViewStyle,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import Animated, {
   AnimatedStyleProp,
@@ -72,6 +71,7 @@ const Presenter = ({}) => {
   const [currentCategory, setCurrentCategory] = useState<number>(0);
   const headerTextHeight = useSharedValue<number>(HEADER_TEXT_INITIAL_HEIGHT);
   const headerTextMargin = useSharedValue<number>(HEADER_TEXT_INITIAL_MARGIN);
+  const [isCategoryPressed, setCategoryPressed] = useState<boolean>(false);
   const firstRenderScreen: MutableRefObject<boolean> = useRef<boolean>(true);
 
   const translationY = useSharedValue(0);
@@ -104,11 +104,6 @@ const Presenter = ({}) => {
       }),
     );
 
-  const isInitialCategory: boolean = useMemo(
-    () => currentCategory === 0,
-    [currentCategory],
-  );
-
   const headerTextAnimatedStyle: AnimatedStyleProp<ViewStyle> =
     useAnimatedStyle(
       (): ViewStyle => ({
@@ -123,18 +118,18 @@ const Presenter = ({}) => {
   }, []);
 
   useEffect((): void => {
-    headerTextOpacity.value = withTiming(isInitialCategory ? 1 : 0, {
+    headerTextOpacity.value = withTiming(!isCategoryPressed ? 1 : 0, {
       duration: DURATION,
     });
     headerTextHeight.value = withTiming(
-      isInitialCategory ? HEADER_TEXT_INITIAL_HEIGHT : 0,
+      !isCategoryPressed ? HEADER_TEXT_INITIAL_HEIGHT : 0,
       {duration: DURATION},
     );
     headerTextMargin.value = withTiming(
-      isInitialCategory ? HEADER_TEXT_INITIAL_MARGIN : 0,
+      !isCategoryPressed ? HEADER_TEXT_INITIAL_MARGIN : 0,
       {duration: DURATION},
     );
-  }, [isInitialCategory]);
+  }, [isCategoryPressed]);
 
   useEffect((): void => {
     if (firstRenderScreen.current) {
@@ -158,6 +153,7 @@ const Presenter = ({}) => {
   const onPressCategoryButton = useCallback(
     (index: number): void => {
       setCurrentCategory(index);
+      setCategoryPressed(true);
     },
     [currentCategory],
   );
@@ -283,9 +279,9 @@ const Presenter = ({}) => {
         </View>
         <Animated.View
           style={[
-            currentCategory === 0
-              ? headerTextScrollAnimatedStyle
-              : headerTextAnimatedStyle,
+            isCategoryPressed
+              ? headerTextAnimatedStyle
+              : headerTextScrollAnimatedStyle,
           ]}>
           <Animated.Text
             style={[

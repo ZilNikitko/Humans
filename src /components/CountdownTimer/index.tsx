@@ -15,13 +15,7 @@ import styles from './styles';
 const ONE_SECOND: number = 1000;
 
 const CountdownTimer = memo(
-  ({
-    style,
-    textStyle,
-    isStart = false,
-    initialTimeInterval = 0,
-    onTimerEnd = () => {},
-  }: Props) => {
+  ({style, textStyle, isStart = false, initialTimeInterval = 0}: Props) => {
     const [timeInterval, setTimeInterval] =
       useState<number>(initialTimeInterval);
     const [isActive, setIsActive] = useState<boolean>(false);
@@ -47,7 +41,6 @@ const CountdownTimer = memo(
       if (timeInterval <= 0) {
         clearInterval(interval as unknown as ReturnType<typeof setInterval>);
         setTimeInterval(0);
-        onTimerEnd();
       }
       return (): void =>
         clearInterval(interval as unknown as ReturnType<typeof setInterval>);
@@ -82,5 +75,4 @@ interface Props {
   textStyle?: StyleProp<TextStyle>;
   isStart?: boolean;
   initialTimeInterval?: number;
-  onTimerEnd?: () => void;
 }
