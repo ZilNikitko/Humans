@@ -6369,11 +6369,6 @@ react-native-gesture-handler@^2.12.1:
     lodash "^4.17.21"
     prop-types "^15.7.2"
 
-react-native-pager-view@^6.2.1:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/react-native-pager-view/-/react-native-pager-view-6.2.1.tgz#985d21bbb7d7bc012f4c142dedbb98ce4bdea104"
-  integrity sha512-fZ8chez5J+w831nSnbtK8hwlCiMy1DgpFv8xG6ajXLsAI8uMkGvP554QDIDNlUoCuVwMf7OFyd32Y2Nm2Iaj9Q==
-
 react-native-reanimated-carousel@^3.5.1:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/react-native-reanimated-carousel/-/react-native-reanimated-carousel-3.5.1.tgz#3605b9959ffc0aa1c6b8b8736d98f91f46e36b17"
