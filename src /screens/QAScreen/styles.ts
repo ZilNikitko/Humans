@@ -41,23 +41,13 @@ export default StyleSheet.create({
     height: SCREEN_HEIGHT,
     width: SCREEN_WIDTH,
   },
-  pageButtonRight: {
-    height: '100%',
-    width: 25,
-    marginHorizontal: -16,
-    position: 'absolute',
-    zIndex: 3,
-    borderWidth: 1,
-    right: 0,
+  carouselWrapper: {
+    zIndex: 2,
   },
-  pageButtonLeft: {
-    height: '100%',
-    width: 25,
-    marginHorizontal: -16,
+  carousel: {
+    flex: 1,
+    justifyContent: 'center',
     position: 'absolute',
-    zIndex: 3,
-    borderWidth: 1,
-    left: 0,
-    borderColor: 'red',
+    height: SCREEN_HEIGHT,
   },
 });

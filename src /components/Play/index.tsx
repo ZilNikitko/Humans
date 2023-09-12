@@ -27,6 +27,7 @@ import CountdownTimer from '../CountdownTimer';
 import styles from './styles';
 
 const DURATION: number = 300;
+const ONE_SECOND: number = 1000;
 const INITIAL_PLAY_WIDTH: number = 0;
 
 const Play = memo(
@@ -70,7 +71,7 @@ const Play = memo(
         valueWidthWrapper.value = withPause(
           withTiming(
             SCREEN_WIDTH - 120,
-            {duration: soundLength * 1000, easing: Easing.linear},
+            {duration: soundLength * ONE_SECOND, easing: Easing.linear},
             (): void => {
               runOnJS(setIsOver)(true);
               runOnJS(setIsStart)(false);

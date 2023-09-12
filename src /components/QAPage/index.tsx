@@ -3,17 +3,17 @@ import {
   Text,
   View,
   Image,
-  ImageStyle,
   ImageSourcePropType,
   TouchableOpacity,
   ViewStyle,
 } from 'react-native';
 
 import Animated, {
-  AnimatedStyleProp,
-  SharedValue,
-  useAnimatedStyle,
+  withTiming,
   useDerivedValue,
+  useAnimatedStyle,
+  SharedValue,
+  AnimatedStyleProp,
 } from 'react-native-reanimated';
 
 import HeartButton from '../HeartButton';
@@ -34,32 +34,26 @@ const QAPage = memo(
     name,
     work,
     index,
-    offset,
     rating,
-    position,
+    progress,
     question,
     userCount,
     roundImage,
     likesCount,
     audioDuration,
+    currentPagerIndex,
     handleOnPressNextPage = () => {},
     handleOnPressPreviousPage = () => {},
-    currentPagerIndex,
   }: Props) => {
     const [pressedHeart, setPressedHeart] = useState<boolean>(false);
 
     const opacityValue: Readonly<SharedValue<number>> =
       useDerivedValue<number>(() => {
-        const STEP_VALUE: number = 0.5;
-        if (
-          index < currentPagerIndex ||
-          (index > currentPagerIndex && position.value === index) ||
-          (index === currentPagerIndex && position.value >= currentPagerIndex)
-        ) {
-          return 1 - offset.value / STEP_VALUE;
+        if (Math.round(progress.value) === index) {
+          return withTiming(1, {duration: 300});
         }
 
-        return 1 - (1 - offset.value) / STEP_VALUE;
+        return withTiming(0, {duration: 300});
       }, [index, currentPagerIndex]);
 
     const opacityAnimatedStyle: AnimatedStyleProp<ViewStyle> = useAnimatedStyle(
@@ -68,49 +62,25 @@ const QAPage = memo(
       }),
     );
 
+    const sizeValue: Readonly<SharedValue<number>> =
+      useDerivedValue<number>(() => {
+        if (Math.round(progress.value) === index) {
+          return withTiming(148, {duration: 300});
+        }
+
+        return withTiming(100, {duration: 300});
+      }, [index, currentPagerIndex]);
+
+    const roundAnimatedStyle: AnimatedStyleProp<ViewStyle> = useAnimatedStyle(
+      (): ViewStyle => ({
+        width: sizeValue.value,
+        height: sizeValue.value,
+      }),
+    );
+
     const onPressHeart = useCallback(() => {
       setPressedHeart(prev => !prev);
     }, []);
-
-    const imageParallaxTranslateX: Readonly<SharedValue<number>> =
-      useDerivedValue<number>(() => {
-        const STEP_VALUE: number = -50;
-        if (
-          (index > currentPagerIndex && position.value !== index) ||
-          (index === currentPagerIndex && position.value < currentPagerIndex)
-        ) {
-          return -((1 - offset.value) * STEP_VALUE);
-        }
-
-        return offset.value * STEP_VALUE;
-      }, [index, currentPagerIndex]);
-
-    const imageScaleValue: Readonly<SharedValue<number>> =
-      useDerivedValue<number>(() => {
-        const STEP_VALUE: number = 3;
-        if (
-          index < currentPagerIndex ||
-          (index > currentPagerIndex && position.value === index) ||
-          (index === currentPagerIndex && position.value >= currentPagerIndex)
-        ) {
-          return (1 - offset.value) / STEP_VALUE + 1;
-        }
-
-        return offset.value / STEP_VALUE + 1;
-      }, [index, currentPagerIndex]);
-
-    const imageAnimatedStyle: AnimatedStyleProp<ImageStyle> = useAnimatedStyle(
-      (): ImageStyle => ({
-        transform: [
-          {
-            translateX: imageParallaxTranslateX.value,
-          },
-          {
-            scale: imageScaleValue.value,
-          },
-        ],
-      }),
-    );
 
     const onPressNextPage = useCallback(() => {
       if (typeof handleOnPressNextPage === 'function') {
@@ -129,23 +99,31 @@ const QAPage = memo(
         <View style={styles.contentWrapper}>
           <View>
             {roundImage && (
-              <Animated.View style={[styles.imageWrapper, imageAnimatedStyle]}>
-                <Image source={roundImage} style={styles.qaImage} />
-              </Animated.View>
+              <View style={styles.imageWrapper}>
+                <Animated.Image
+                  source={roundImage}
+                  style={[roundAnimatedStyle]}
+                />
+              </View>
             )}
-            <TouchableOpacity
-              activeOpacity={1.0}
-              onPress={onPressPreviousPage}
-              style={[styles.pageButton, styles.pageButtonLeft]}
-            />
-            <TouchableOpacity
-              activeOpacity={1.0}
-              onPress={onPressNextPage}
-              style={styles.pageButton}
-            />
+            {index === currentPagerIndex && (
+              <React.Fragment>
+                <TouchableOpacity
+                  activeOpacity={1.0}
+                  onPress={onPressPreviousPage}
+                  style={[styles.pageButton, styles.pageButtonLeft]}
+                />
+                <TouchableOpacity
+                  activeOpacity={1.0}
+                  onPress={onPressNextPage}
+                  style={styles.pageButton}
+                />
+              </React.Fragment>
+            )}
           </View>
-          <Animated.View style={[opacityAnimatedStyle]}>
-            <View style={[styles.subContentWrapper]}>
+          <View>
+            <Animated.View
+              style={[styles.subContentWrapper, opacityAnimatedStyle]}>
               <View style={styles.authorTextWrapper}>
                 {rating && (
                   <View style={styles.ratingRow}>
@@ -189,11 +167,11 @@ const QAPage = memo(
                   usersCount={userCount}
                 />
               )}
-            </View>
-            {audioDuration && (
-              <Play style={styles.play} soundLength={audioDuration} />
-            )}
-          </Animated.View>
+            </Animated.View>
+            <Animated.View style={[styles.play, opacityAnimatedStyle]}>
+              {audioDuration && <Play soundLength={audioDuration} />}
+            </Animated.View>
+          </View>
         </View>
       </View>
     );
@@ -206,10 +184,9 @@ interface Props {
   name?: string;
   work?: string;
   index: number;
-  offset: SharedValue<number>;
   rating?: string;
-  position: SharedValue<number>;
   question?: string;
+  progress: SharedValue<number>;
   userCount?: number;
   roundImage?: ImageSourcePropType;
   likesCount?: number;

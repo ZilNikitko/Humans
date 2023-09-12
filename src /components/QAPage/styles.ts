@@ -10,6 +10,7 @@ export default StyleSheet.create({
     paddingHorizontal: 16,
   },
   imageWrapper: {
+    height: 148,
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 80,

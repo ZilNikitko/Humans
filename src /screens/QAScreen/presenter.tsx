@@ -1,93 +1,102 @@
-import React, {
-  ComponentClass,
-  LegacyRef,
-  ReactElement,
-  useCallback,
-  useRef,
-  useState,
-} from 'react';
-
-import Animated, {AnimateProps, useSharedValue} from 'react-native-reanimated';
-import PagerView, {
-  PagerViewOnPageSelectedEvent,
-  PagerViewProps,
-} from 'react-native-pager-view';
-
-import QAPage from '../../components/QAPage';
-import {usePagerScrollHandler} from '../../lib/utils';
-
-import styles from './styles';
-import {QA_DATA} from '../../lib/Api';
-import {DataQAType} from '../../lib/apiTypes';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   View,
   Image,
   SafeAreaView,
   ImageBackground,
   TouchableOpacity,
-  InteractionManager,
   ImageSourcePropType,
 } from 'react-native';
+
 import {BlurView} from '@react-native-community/blur';
+import Animated, {useSharedValue} from 'react-native-reanimated';
+import Carousel, {ICarouselInstance} from 'react-native-reanimated-carousel';
+
+import {QA_DATA} from '../../lib/Api';
+import {SCREEN_WIDTH} from '../../lib/utils';
+import QAPage from '../../components/QAPage';
+import type {DataQAType} from '../../lib/apiTypes';
 import {CHEVRON_DOWN, DOTS, QA_AVATAR} from '../../../static';
-import {OnPageScrollEventData} from 'react-native-pager-view/lib/typescript/PagerViewNativeComponent';
+
+import styles from './styles';
 
 const INITIAL_PAGE: number = 0;
-
-const AnimatedPager: ComponentClass<AnimateProps<PagerViewProps>> =
-  Animated.createAnimatedComponent(PagerView);
+const PARALLAX_SCROLLING_SCALE: number = 1;
+const PARALLAX_SCROLLING_OFFSET: number = 170;
 
 const ImageBackgroundAnimatedComponent =
   Animated.createAnimatedComponent(ImageBackground);
-type onPageScrollEventType = OnPageScrollEventData & {eventName: string};
 
 const Presenter = ({onPressGoBack, imageArray}: Props) => {
-  const offsetValue = useSharedValue<number>(0);
-  const positionValue = useSharedValue<number>(INITIAL_PAGE);
-  const refPagerView: LegacyRef<PagerView> = useRef(null);
+  const [scrolling, setScrolling] = useState<boolean>(false);
+  const [backgroundImage, setBackgroundImage] = useState(
+    imageArray ? imageArray[INITIAL_PAGE] : [],
+  );
+  const carouselRef = useRef<ICarouselInstance | null>();
+  const progressValue = useSharedValue<number>(0);
   const [currentPagerIndex, setCurrentPagerIndex] =
     useState<number>(INITIAL_PAGE);
 
-  const [lol, setLol] = useState(false);
+  const prevPagerIndex = useRef<number>(currentPagerIndex);
 
-  const onPageScroll = usePagerScrollHandler<onPageScrollEventType>(
-    {
-      onPageScroll: (e: onPageScrollEventType): void => {
-        'worklet';
-        offsetValue.value = e.offset;
-        positionValue.value = e.position;
-      },
+  useEffect(() => {
+    prevPagerIndex.current = currentPagerIndex;
+  }, [currentPagerIndex]);
+
+  const onPageSelected = useCallback(
+    (index: number): void => {
+      if (index || index === 0) {
+        setCurrentPagerIndex(index);
+      }
     },
-    'onPageScroll',
     [currentPagerIndex],
   );
 
-  const onPageSelected = useCallback(
-    (e: PagerViewOnPageSelectedEvent): void => {
-      setLol(true);
-      const currentIndex: number = e.nativeEvent?.position;
-      if (currentIndex || currentIndex === 0) {
-        setCurrentPagerIndex(currentIndex);
-      }
-    },
-    [currentPagerIndex, lol],
-  );
-
   const goToNextPage = useCallback((): void => {
-    if (refPagerView.current && currentPagerIndex !== QA_DATA.length - 1) {
-      InteractionManager.runAfterInteractions((): void => {
-        refPagerView.current?.setPage(currentPagerIndex + 1);
-      });
-    }
-  }, [currentPagerIndex]);
+    carouselRef?.current?.next();
+  }, []);
 
   const goToPreviousPage = useCallback((): void => {
-    if (refPagerView.current && currentPagerIndex !== 0) {
-      InteractionManager.runAfterInteractions((): void => {
-        refPagerView.current?.setPage(currentPagerIndex - 1);
-      });
+    carouselRef?.current?.prev();
+  }, []);
+
+  useEffect(() => {
+    if (scrolling && imageArray) {
+      setBackgroundImage(imageArray[currentPagerIndex + 1]);
     }
-  }, [currentPagerIndex]);
+  }, [scrolling]);
+
+  const onProgressChange = useCallback(
+    (_: number, absoluteProgress?: number) => {
+      if (absoluteProgress) {
+        absoluteProgress % 1 !== 0 ? setScrolling(true) : setScrolling(false);
+        return (progressValue.value = absoluteProgress);
+      }
+    },
+    [],
+  );
+
+  const renderCarouselItem = useCallback(
+    ({item, index}: {item: DataQAType; index: number}) => (
+      <QAPage
+        progress={progressValue}
+        handleOnPressNextPage={goToNextPage}
+        handleOnPressPreviousPage={goToPreviousPage}
+        currentPagerIndex={currentPagerIndex}
+        index={index}
+        name={item?.name}
+        work={item?.work}
+        rating={item?.rating}
+        key={`qa_page_${index}`}
+        question={item?.question}
+        userCount={item?.userCount}
+        roundImage={item?.roundImage}
+        likesCount={item?.likesCount}
+        audioDuration={item?.audioDuration}
+      />
+    ),
+    [currentPagerIndex],
+  );
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
@@ -105,39 +114,27 @@ const Presenter = ({onPressGoBack, imageArray}: Props) => {
         </TouchableOpacity>
       </View>
       <ImageBackgroundAnimatedComponent
-        source={imageArray ? imageArray[currentPagerIndex] : QA_AVATAR}
-        style={styles.backGroundImage}
+        source={imageArray ? backgroundImage : QA_AVATAR}
+        style={[styles.backGroundImage]}
       />
       <BlurView blurType="dark" blurAmount={50} style={styles.blurView} />
-      <AnimatedPager
-        ref={refPagerView}
-        initialPage={INITIAL_PAGE}
-        onPageSelected={onPageSelected}
-        // @ts-ignore
-        onPageScroll={onPageScroll}
-        style={styles.pagerView}>
-        {(QA_DATA ?? [])?.map(
-          (item: DataQAType, index: number): ReactElement => (
-            <QAPage
-              handleOnPressPreviousPage={goToPreviousPage}
-              handleOnPressNextPage={goToNextPage}
-              index={index}
-              name={item?.name}
-              work={item?.work}
-              offset={offsetValue}
-              rating={item?.rating}
-              key={`qa_page_${index}`}
-              position={positionValue}
-              question={item?.question}
-              userCount={item?.userCount}
-              roundImage={item?.roundImage}
-              likesCount={item?.likesCount}
-              audioDuration={item?.audioDuration}
-              currentPagerIndex={currentPagerIndex}
-            />
-          ),
-        )}
-      </AnimatedPager>
+      <View style={styles.carouselWrapper}>
+        <Carousel
+          // @ts-ignore
+          ref={carouselRef}
+          onScrollEnd={onPageSelected}
+          data={QA_DATA}
+          renderItem={renderCarouselItem}
+          width={SCREEN_WIDTH}
+          style={styles.carousel}
+          mode="parallax"
+          modeConfig={{
+            parallaxScrollingScale: PARALLAX_SCROLLING_SCALE,
+            parallaxScrollingOffset: PARALLAX_SCROLLING_OFFSET,
+          }}
+          onProgressChange={onProgressChange}
+        />
+      </View>
     </SafeAreaView>
   );
 };

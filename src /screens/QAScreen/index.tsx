@@ -5,10 +5,10 @@ import {QA_DATA} from '../../lib/Api';
 import {ImageSourcePropType} from 'react-native';
 
 const QAScreen = () => {
+  const navigation = useNavigation();
   const imageArray: Array<ImageSourcePropType> = QA_DATA.map(
     item => item.backGroundImage,
   );
-  const navigation = useNavigation();
 
   const onPressGoBack = useCallback((): void => {
     navigation.goBack();
